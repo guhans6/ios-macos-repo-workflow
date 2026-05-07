@@ -49,13 +49,15 @@ Each inferred field should carry:
 - `ci_signals`
   - short list of observed CI workflow truth
 - `tooling_present`
-  - list including `swiftformat`, `swiftlint`, `xcodegen`, `tuist`, `unknown`
+  - list including `swiftformat`, `swiftlint`, `xcodegen`, `tuist`, `graphify`, `unknown`
 
 ## Optional Extensions
 
 - `extensions.ui_tests`
   - `present`, `generated`, `recommended`, `absent`, `unknown`
 - `extensions.generated_project_support`
+  - `present`, `generated`, `recommended`, `absent`, `unknown`
+- `extensions.context_graph`
   - `present`, `generated`, `recommended`, `absent`, `unknown`
 - `extensions.linting`
   - `present`, `generated`, `recommended`, `absent`, `unknown`
@@ -78,6 +80,16 @@ Allowed v1 flags:
 Do not add generalized multi-surface takeover logic in v1.
 If a repo appears to have multiple workflow surfaces, summarize the conflict in prose and keep the structured model narrow.
 
+## Generated Project Support
+
+If generated-project tooling is present or requested:
+
+- prefer `project_system: tuist` when Tuist manifests are present
+- prefer `project_system: xcodegen` when `project.yml` or `project.yaml` is present and no Tuist manifest is present
+- preserve existing XcodeGen repos unless the user explicitly approves migration
+- recommend Tuist for new clean generated-project adoption, but do not install it or migrate the repo automatically
+- report generated-file ownership and rollback expectations in prose rather than extending v1 schema fields
+
 ## Mixed Xcode/SPM Repos
 
 If an authoritative app project surface and `Package.swift` both exist:
@@ -95,3 +107,12 @@ If repo rules or docs indicate the active implementation lives in a different wo
 - do not assume the top-level `xcodeproj` is the real workflow truth
 - summarize the divergence in prose rather than extending the v1 schema
 - stop and ask before writing to the main checkout when repo rules point elsewhere
+
+## Context Graph
+
+If Graphify artifacts or commands are present:
+
+- set `extensions.context_graph: present` when `graphify-out/graph.json` exists or a graph refresh script already exists
+- set `extensions.context_graph: recommended` when the repo is large or architecture relationships are unclear and Graphify is available
+- keep Graphify outside normal build/test/verify paths
+- use prose to explain when agents should query or refresh the graph

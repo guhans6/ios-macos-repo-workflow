@@ -29,6 +29,7 @@ If the checkout is already known to contain unrelated in-flight local changes, p
 - Do not install tools, activate hooks, rewrite CI, or boot simulators in v1.
 - Do not force repo normalization when existing workflow truth is stronger.
 - Do not turn this skill into a general Apple-platform advice dump.
+- Do not switch to compact/caveman-style output unless the user explicitly asks for token reduction.
 
 ## Workflow
 
@@ -54,10 +55,18 @@ Support only a narrow set of optional extensions:
 
 - `ui_tests`
 - `generated_project_support`
+- `context_graph`
 - `linting`
 - `formatting`
 
 Generated-project repos should be detected and handled conservatively.
+
+For generated-project support:
+
+- prefer Tuist for new clean repos when the user asks for generated-project adoption
+- preserve XcodeGen when it already exists unless migration is explicitly approved
+- do not auto-install Tuist or XcodeGen
+- do not auto-migrate `.xcodeproj` ownership; proposals must explain learning curve, generated-file ownership, and rollback
 
 Mixed Xcode/SPM repos should also be handled conservatively:
 
@@ -84,7 +93,21 @@ Optional rendered artifacts:
 
 - `test-ui.sh`
 - generation helper script for XcodeGen/Tuist-backed repos
+- `graphify-refresh.sh` for optional agent context graph refresh
 - inactive hook templates only when explicitly requested; manual installation and `chmod +x` remain repo decisions
+
+## Context Graph Guidance
+
+Graphify is optional and should reduce agent context overhead, not become part of normal verification.
+
+Use an existing graph before broad architecture/refactor work, when file relationships are unclear, or when manual search would require reading many files.
+Refresh graph output after meaningful structural changes if the repo has opted into the `context_graph` extension.
+Do not run Graphify automatically during build, test, verify, commit, or CI paths in v1.
+
+## Compact Output Guidance
+
+If the user asks for lower token usage, caveman mode, or brief output, keep proposals and status updates compact while preserving technical accuracy.
+Use normal clarity for approval-sensitive proposals, docs, destructive operations, and irreversible actions unless the user explicitly asks otherwise.
 
 ## Templates
 
@@ -98,6 +121,7 @@ Optional rendered artifacts:
 - primary workflow surface is ambiguous
 - managed artifact ownership is unclear
 - generated-project tooling is detected but existing command truth conflicts
+- graph context exists but is stale and the requested task depends on broad architecture knowledge
 - repo rules indicate the active implementation surface is a different worktree or root
 - the checkout is already known to contain unrelated in-flight local changes
 - a write would replace human-authored workflow files rather than patch skill-owned ones

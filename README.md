@@ -23,6 +23,7 @@ This repo is intentionally narrow. It is not a build system, CI framework, or re
 | `templates/agents/workflow-block.md` | Managed `AGENTS.md` block template | Gives each target repo a bounded workflow section instead of ad hoc instructions |
 | `templates/scripts/*.sh` | Canonical command templates | Standardizes build/test/verify/bootstrap entrypoints |
 | `templates/hooks/pre-commit` | Optional inactive hook template | Lets you add lightweight local guardrails without auto-installing hooks |
+| Optional Graphify support | Context graph refresh guidance and script template | Helps agents inspect relationships without rereading large parts of the repo |
 | Validation examples | Real proposals/audits from tested repos | Shows how the workflow behaves on actual Apple app repos |
 
 ## When to use it
@@ -126,7 +127,8 @@ These scripts are templates. They are rendered into a target repo and become tha
 | `templates/scripts/verify-deep.sh` | Broader verification entrypoint | Separates cheap checks from slower or wider checks | Run before merges or larger changes |
 | `templates/scripts/bootstrap-dev.sh` | Local workflow discovery helper | Reminds contributors what the canonical commands are | Run when onboarding or checking the managed workflow shape |
 | `templates/scripts/test-ui.sh` | Optional UI test entrypoint | Keeps UI validation explicit and separate from routine checks | Add only when the repo has a real UI test surface |
-| `templates/scripts/generate-project.sh` | Optional project-generation entrypoint | Supports XcodeGen/Tuist-style generated project repos | Add only when project generation is part of normal workflow truth |
+| `templates/scripts/generate-project.sh` | Optional generated-project entrypoint | Supports Tuist-first or existing XcodeGen repos without installing tools | Add when project generation is part of normal workflow truth |
+| `templates/scripts/graphify-refresh.sh` | Optional context graph refresh entrypoint | Keeps Graphify output fresh for agent architecture discovery | Run after meaningful structural changes, not during normal build/test verification |
 
 ## What each hook/config/template does
 
@@ -137,6 +139,58 @@ These scripts are templates. They are rendered into a target repo and become tha
 | `references/profile-schema.md` | Inspection schema | Forces consistent repo profiling | Modify when the workflow contract needs a new stable field or rule |
 | `references/proposal-format.md` | Proposal schema | Keeps outputs predictable and reviewable | Modify when proposal expectations change across all repos |
 | `SKILL.md` | Agent execution contract | Defines workflow behavior for Codex | Modify when the workflow rules themselves need to change |
+
+## Tuist and XcodeGen
+
+This workflow prefers Tuist for new clean generated-project Apple app repos when you intentionally want project generation.
+It preserves XcodeGen when a repo already uses `project.yml` or `project.yaml`.
+
+| Tool | When to use | Why |
+| --- | --- | --- |
+| Tuist | New clean repo where generated projects are part of the plan | Stronger Apple-project platform, Swift manifests, and room for cache/selective-test features later |
+| XcodeGen | Existing repo already using XcodeGen | Lower migration risk and simple YAML/JSON project specs |
+| Manual `.xcodeproj` | Small app repo where Xcode project churn is not a problem | Lowest learning curve and no generator dependency |
+
+This repo does not install Tuist, install XcodeGen, or migrate `.xcodeproj` files automatically.
+Migration should stay proposal-first because it changes project ownership, onboarding steps, and rollback behavior.
+
+## Graphify Context
+
+Graphify is optional. Use it to reduce architecture-discovery overhead, not to replace build/test verification.
+
+| Situation | What to do | Why |
+| --- | --- | --- |
+| Starting broad architecture or refactor work | Query `graphify-out/graph.json` if present | Finds related files and concepts before reading too much code |
+| File relationships are unclear | Use `graphify query`, `graphify path`, or `graphify explain` | Gives agents a smaller context path through the repo |
+| Architecture changed meaningfully | Run the rendered `graphify-refresh.sh` script | Keeps graph artifacts useful for later sessions |
+| Routine build/test work | Do not run Graphify by default | Avoids turning context tooling into workflow friction |
+
+Prompt examples:
+
+```text
+Use graphify first to identify related files before planning this refactor.
+```
+
+```text
+If graphify-out/graph.json exists, query it before broad manual search.
+```
+
+## Caveman Token Mode
+
+Caveman is a separate local skill for compact communication.
+This workflow does not force it by default because proposals and workflow docs need to stay clear.
+
+Use it when you want lower-token status, summaries, or repeated progress updates:
+
+```text
+Use caveman mode for status updates and summaries.
+```
+
+Use normal mode when clarity is more important:
+
+```text
+Use normal mode for proposals, docs, and irreversible actions.
+```
 
 ## Recommended Codex workflow
 
@@ -190,6 +244,7 @@ For Codex-assisted development, the biggest practical win is token reduction thr
 | [templates/scripts/bootstrap-dev.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/bootstrap-dev.sh) | Bootstrap helper template |
 | [templates/scripts/test-ui.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/test-ui.sh) | Optional UI test template |
 | [templates/scripts/generate-project.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/generate-project.sh) | Optional generated-project template |
+| [templates/scripts/graphify-refresh.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/graphify-refresh.sh) | Optional Graphify context refresh template |
 | [templates/hooks/pre-commit](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/hooks/pre-commit) | Optional inactive hook template |
 | [mdzen-v1-proposal.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md) | MDZen refresh example |
 | [mdzen-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-audit.md) | MDZen audit example |
@@ -209,6 +264,8 @@ Modify this repo carefully and at the right level.
 | Shared shell behavior | `templates/scripts/common.sh` | One helper affects many rendered scripts |
 | One specific command surface | Relevant script template in `templates/scripts/` | Keeps behavior localized |
 | Optional hook behavior | `templates/hooks/pre-commit` | Hooks should remain explicit and minimal |
+| Generated-project policy | `SKILL.md`, `references/profile-schema.md`, and `templates/scripts/generate-project.sh` | Tuist/XcodeGen decisions affect repo ownership and onboarding |
+| Graphify context behavior | `SKILL.md`, `references/proposal-format.md`, and `templates/scripts/graphify-refresh.sh` | Context graphs should help agents without becoming required verification |
 
 Guidelines:
 

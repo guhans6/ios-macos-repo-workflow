@@ -43,7 +43,22 @@ Only include strong-fit extensions:
 
 - `test-ui.sh`
 - generated-project helper
+- `graphify-refresh.sh` for optional context graph refresh
 - inactive hook templates when explicitly requested
+
+For generated-project helper proposals:
+
+- prefer Tuist for new clean repos when generated-project adoption is requested
+- preserve XcodeGen when it already exists unless migration is explicitly approved
+- explain that Tuist/XcodeGen will not be installed automatically
+- explain generated-file ownership and rollback expectations before any migration proposal
+
+For Graphify proposals:
+
+- present it as an optional agent context layer, not a build/test dependency
+- recommend it before broad architecture/refactor work or when file relationships are unclear
+- recommend refresh after meaningful structural changes
+- do not include Graphify in normal `build`, `test`, `verify-fast`, `verify-deep`, commit, or CI paths in v1
 
 ## 4. Recommendations Only
 
@@ -55,6 +70,7 @@ Use for improvements that should not be written automatically:
 - CI alignment follow-up
 - probe phase for unknown fields
 - module-surface validation when mixed Xcode/SPM evidence suggests import-name drift
+- caveman/compact output for low-token status updates and summaries
 
 ## 5. Questions
 

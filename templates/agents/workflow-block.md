@@ -27,4 +27,11 @@
 - Prefer the canonical entrypoints named above for routine work.
 - Use optional extension commands only when the repo profile justifies them.
 - This block is managed. Patch the workflow through the skill rather than editing the block casually.
+
+## Optional Context Graph
+
+- If this repo has `graphify-out/graph.json`, query it before broad architecture, refactor, or cross-file reasoning work.
+- Use Graphify when file relationships are unclear or manual search would require reading many files.
+- Refresh the graph after meaningful structural changes if `graphify-refresh` is part of this repo's script surface.
+- Do not treat Graphify as a build, test, commit, or CI requirement unless this repo explicitly says so elsewhere.
 <!-- Managed by ios-macos-repo-workflow v0.1:end -->
