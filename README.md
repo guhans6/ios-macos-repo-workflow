@@ -224,6 +224,8 @@ Worktree-first repos are audit-first in v1.
 
 If repo rules say the real implementation surface is a different worktree than the provided checkout, the workflow should stop and ask before writing.
 
+Dirty active checkouts are also audit-first when the local modifications are already known and the write scope is not explicit.
+
 ## Mixed Xcode/SPM Repos
 
 One important v1 lesson from validation:

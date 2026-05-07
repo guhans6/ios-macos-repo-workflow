@@ -19,6 +19,7 @@ It is not a build-system framework, CI manager, or deep Apple engineering guide.
 Infer a default mode from repo state, but announce it and allow override.
 If uncertainty is high, prefer `audit`.
 If repo rules indicate the active implementation surface is a different worktree or root than the provided path, use `audit` only until the active surface is confirmed.
+If the checkout is already known to contain unrelated in-flight local changes, prefer `audit` until the write scope is explicit.
 
 ## Do Not Do
 
@@ -35,13 +36,14 @@ If repo rules indicate the active implementation surface is a different worktree
 2. Build a partial repo profile.
 3. Mark uncertain fields as `unknown`.
 4. If repo rules indicate the active implementation surface lives in a different worktree or root than the provided path, switch to `audit`, summarize the divergence, and stop to ask before writing.
-5. Read [profile-schema.md](references/profile-schema.md) and use only that schema.
-6. Render a concise proposal using [proposal-format.md](references/proposal-format.md).
-7. Separate output into:
+5. If the checkout is already known to contain unrelated in-flight local changes, switch to `audit`, summarize the risk, and stop to ask before writing.
+6. Read [profile-schema.md](references/profile-schema.md) and use only that schema.
+7. Render a concise proposal using [proposal-format.md](references/proposal-format.md).
+8. Separate output into:
    - core changes
    - optional generated extensions
    - recommendations only
-8. After approval, render repo-local artifacts from `templates/`.
+9. After approval, render repo-local artifacts from `templates/`.
 
 When a repo already has a strong script layout signal such as `script/` or `scripts/`, preserve that layout instead of normalizing it to a new directory name in v1.
 
@@ -91,6 +93,7 @@ Optional rendered artifacts:
 - managed artifact ownership is unclear
 - generated-project tooling is detected but existing command truth conflicts
 - repo rules indicate the active implementation surface is a different worktree or root
+- the checkout is already known to contain unrelated in-flight local changes
 - a write would replace human-authored workflow files rather than patch skill-owned ones
 
 ## Validation Target

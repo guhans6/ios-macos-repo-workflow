@@ -6,12 +6,12 @@ Reason: `WhisperV` is an active root checkout with existing workflow docs and a 
 ## Repo Summary
 
 - Repo: `WhisperV`
-- Template type: `mixed_apple_app`
+- Template type: `swiftui_app`
   - confidence: `medium`
-  - source: `WhisperV.xcodeproj`, app sources, remote SPM dependencies, status-bar app structure
-- Project system: `mixed`
+  - source: `WhisperV.xcodeproj`, app sources, status-bar app structure
+- Project system: `xcodeproj`
   - confidence: `medium`
-  - source: `WhisperV.xcodeproj` plus remote Swift package dependencies in the Xcode project
+  - source: `WhisperV.xcodeproj`
 - Workflow state: `unmanaged_existing`
   - confidence: `high`
   - source: existing `AGENTS.md`, `docs/tasklog`, `TESTING.md`, `PROJECT_SETUP.md`, and `scripts/whisperv-bench.sh`
