@@ -230,7 +230,8 @@ The current contract is:
 - [`references/profile-schema.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/profile-schema.md): structured repo profile rules
 - [`references/proposal-format.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/proposal-format.md): proposal output contract
 - [`templates/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates): managed artifact templates
-- [`mdzen-v1-proposal.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md): example proposal from first validation
+- [`mdzen-v1-proposal.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md): example `refresh` proposal from first validation
+- [`mdzen-v1-audit.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-audit.md): example `audit` output from first validation
 
 ## Validation
 
@@ -244,6 +245,7 @@ What MDZen proved:
 - proposal-before-write is the right guardrail
 - mixed Xcode/SPM repos need conservative handling
 - a small command surface is more important than broad automation
+- the repo should carry concrete mode examples, not only abstract mode descriptions
 
 ## Next Phases
 
