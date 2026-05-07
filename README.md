@@ -175,8 +175,9 @@ Optional generated artifacts:
 
 - `test-ui.sh`
 - `generate-project.sh`
+- `hooks/pre-commit` template on explicit request only
 
-These come from [`templates/agents/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/agents) and [`templates/scripts/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts).
+These come from [`templates/agents/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/agents), [`templates/scripts/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts), and [`templates/hooks/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/hooks).
 
 ## Why The Scripts Are In This Repo
 
@@ -190,6 +191,13 @@ They exist because the product here is not only a skill file. The product is the
 - the managed templates
 
 When this workflow is used on a target repo, those templates become that repo's canonical local workflow surface.
+
+The hook template is different:
+
+- it is intentionally inactive
+- it is only a wrapper around the canonical verification entrypoint
+- activating it remains a manual repo decision
+- installing it requires `chmod +x` on the copied hook file
 
 ## Current V1 Constraints
 
@@ -209,6 +217,10 @@ Unknown is allowed.
 Proposal-before-write is required.
 
 Static inspection is the first pass.
+
+Worktree-first repos are audit-first in v1.
+
+If repo rules say the real implementation surface is a different worktree than the provided checkout, the workflow should stop and ask before writing.
 
 ## Mixed Xcode/SPM Repos
 
@@ -232,12 +244,17 @@ The current contract is:
 - [`templates/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates): managed artifact templates
 - [`mdzen-v1-proposal.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md): example `refresh` proposal from first validation
 - [`mdzen-v1-audit.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-audit.md): example `audit` output from first validation
+- [`dsv-v1-audit.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/dsv-v1-audit.md): example `audit` output for a worktree-first repo
 
 ## Validation
 
 First validation repo:
 
 - `/Users/guhan/Guhan/Projects/MDZen`
+
+Second validation repo:
+
+- `/Users/guhan/Guhan/Projects/DSV`
 
 What MDZen proved:
 
@@ -247,14 +264,20 @@ What MDZen proved:
 - a small command surface is more important than broad automation
 - the repo should carry concrete mode examples, not only abstract mode descriptions
 
+What DSV proved:
+
+- the workflow cannot assume the provided repo root is always the active implementation surface
+- worktree-first repos need an audit-first stop condition before writes
+- hook support is only safe in v1 as an inactive template, not an auto-installed behavior
+
 ## Next Phases
 
 Near-term:
 
-1. Validate on a second repo.
-2. Add more example proposals and audit outputs.
-3. Add lightweight fixture-based validation for template rendering.
-4. Decide whether a tiny machine-readable manifest belongs in v1.1.
+1. Add lightweight fixture-based validation for template rendering.
+2. Decide whether a tiny machine-readable manifest belongs in v1.1.
+3. Validate one clean bootstrap repo where the provided root is also the active implementation surface.
+4. Decide whether inactive hook templates should stay in v1 or move to v1.1.
 
 Later:
 

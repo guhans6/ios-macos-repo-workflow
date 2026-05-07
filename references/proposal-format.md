@@ -37,7 +37,7 @@ Only include strong-fit extensions:
 
 - `test-ui.sh`
 - generated-project helper
-- hook templates when explicitly requested
+- inactive hook templates when explicitly requested
 
 ## 4. Recommendations Only
 

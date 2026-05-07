@@ -86,3 +86,12 @@ If an authoritative app project surface and `Package.swift` both exist:
 - keep app-first versus package-supporting intent in prose unless the primary surface is unambiguous
 - do not infer that package product names and Xcode app module names are interchangeable
 - if test-import or module-surface drift is visible from static files, report it as a risk or recommendation rather than adding a new v1 schema field
+
+## Worktree-First Repos
+
+If repo rules or docs indicate the active implementation lives in a different worktree or root:
+
+- treat the provided path as an `audit` target until the active surface is confirmed
+- do not assume the top-level `xcodeproj` is the real workflow truth
+- summarize the divergence in prose rather than extending the v1 schema
+- stop and ask before writing to the main checkout when repo rules point elsewhere

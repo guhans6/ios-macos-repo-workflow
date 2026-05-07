@@ -18,6 +18,7 @@ It is not a build-system framework, CI manager, or deep Apple engineering guide.
 
 Infer a default mode from repo state, but announce it and allow override.
 If uncertainty is high, prefer `audit`.
+If repo rules indicate the active implementation surface is a different worktree or root than the provided path, use `audit` only until the active surface is confirmed.
 
 ## Do Not Do
 
@@ -33,13 +34,14 @@ If uncertainty is high, prefer `audit`.
 1. Perform static inspection only.
 2. Build a partial repo profile.
 3. Mark uncertain fields as `unknown`.
-4. Read [profile-schema.md](references/profile-schema.md) and use only that schema.
-5. Render a concise proposal using [proposal-format.md](references/proposal-format.md).
-6. Separate output into:
+4. If repo rules indicate the active implementation surface lives in a different worktree or root than the provided path, switch to `audit`, summarize the divergence, and stop to ask before writing.
+5. Read [profile-schema.md](references/profile-schema.md) and use only that schema.
+6. Render a concise proposal using [proposal-format.md](references/proposal-format.md).
+7. Separate output into:
    - core changes
    - optional generated extensions
    - recommendations only
-7. After approval, render repo-local artifacts from `templates/`.
+8. After approval, render repo-local artifacts from `templates/`.
 
 ## V1 Scope
 
@@ -72,19 +74,21 @@ Optional rendered artifacts:
 
 - `test-ui.sh`
 - generation helper script for XcodeGen/Tuist-backed repos
-- hook templates only when requested
+- inactive hook templates only when explicitly requested; manual installation and `chmod +x` remain repo decisions
 
 ## Templates
 
 - Managed AGENTS block: [workflow-block.md](templates/agents/workflow-block.md)
 - Shell helper: [common.sh](templates/scripts/common.sh)
 - Core scripts: `templates/scripts/*.sh`
+- Inactive hook template: [pre-commit](templates/hooks/pre-commit)
 
 ## When To Stop And Ask
 
 - primary workflow surface is ambiguous
 - managed artifact ownership is unclear
 - generated-project tooling is detected but existing command truth conflicts
+- repo rules indicate the active implementation surface is a different worktree or root
 - a write would replace human-authored workflow files rather than patch skill-owned ones
 
 ## Validation Target

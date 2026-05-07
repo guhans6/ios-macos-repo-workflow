@@ -39,3 +39,31 @@ log_path() {
   ensure_log_dir
   printf '%s/.logs/%s-%s.log\n' "$root" "$name" "$(timestamp)"
 }
+
+sanitize_label() {
+  local label="$1"
+  label="${label//\//-}"
+  label="${label// /-}"
+  printf '%s\n' "$label"
+}
+
+run_logged() {
+  local label="$1"
+  shift
+
+  local log_file
+  log_file="$(log_path "$(sanitize_label "$label")")"
+
+  echo "Running $label..."
+  if "$@" >"$log_file" 2>&1; then
+    echo "OK: $label"
+    echo "Log: $log_file"
+    return 0
+  fi
+
+  local status=$?
+  echo "FAILED: $label" >&2
+  echo "Log: $log_file" >&2
+  tail -n 40 "$log_file" >&2 || true
+  return "$status"
+}
