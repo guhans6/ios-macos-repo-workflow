@@ -9,7 +9,7 @@ set -euo pipefail
 # installed hook file.
 
 ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-VERIFY_FAST="$ROOT_DIR/script/verify-fast.sh"
+VERIFY_FAST="$ROOT_DIR/__VERIFY_FAST_PATH__"
 
 if [[ ! -x "$VERIFY_FAST" ]]; then
   echo "Missing canonical verification entrypoint: $VERIFY_FAST" >&2

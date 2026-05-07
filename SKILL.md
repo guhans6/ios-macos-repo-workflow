@@ -43,6 +43,8 @@ If repo rules indicate the active implementation surface is a different worktree
    - recommendations only
 8. After approval, render repo-local artifacts from `templates/`.
 
+When a repo already has a strong script layout signal such as `script/` or `scripts/`, preserve that layout instead of normalizing it to a new directory name in v1.
+
 ## V1 Scope
 
 V1 targets Xcode-first Apple app repos.

@@ -18,6 +18,7 @@ The current answer is:
 - show a proposal before any write
 - write only a small managed workflow surface after approval
 - keep audit mode report-only
+- preserve strong existing repo-local script layout when one already exists
 
 ## Who This Is For
 
@@ -198,6 +199,7 @@ The hook template is different:
 - it is only a wrapper around the canonical verification entrypoint
 - activating it remains a manual repo decision
 - installing it requires `chmod +x` on the copied hook file
+- its verification path should be rendered from the repo's actual canonical script layout
 
 ## Current V1 Constraints
 
@@ -269,6 +271,11 @@ What DSV proved:
 - the workflow cannot assume the provided repo root is always the active implementation surface
 - worktree-first repos need an audit-first stop condition before writes
 - hook support is only safe in v1 as an inactive template, not an auto-installed behavior
+
+What WhisperV proves:
+
+- an active root checkout can still be a poor write target when it already has unrelated in-flight changes
+- repos with an existing `scripts/` layout should preserve that layout instead of being normalized to `script/`
 
 ## Next Phases
 
