@@ -1,305 +1,219 @@
 # ios-macos-repo-workflow
 
-`ios-macos-repo-workflow` is a reduced-v1 workflow contract generator and auditor for Xcode-first Apple app repositories.
+## Overview
 
-It helps establish a small, explicit local workflow surface for build, test, and verification without turning into a repo framework, CI migration, or takeover tool.
+`ios-macos-repo-workflow` is a reusable workflow/template for Xcode-first iOS and macOS repositories that you want to develop with Codex or other coding agents.
 
-## Summary
+Its job is simple:
 
-This project exists to answer a narrow question:
+- give the repo a small, explicit local command surface
+- make build/test/verify entrypoints easy for humans and agents to find
+- keep workflow decisions documented in-repo
+- reduce repeated prompt setup and workflow ambiguity
 
-How should an Apple app repo expose a trustworthy local workflow contract for humans and agents?
+This repo is intentionally narrow. It is not a build system, CI framework, or repo takeover tool.
 
-The current answer is:
+## What this repo provides
 
-- inspect the repo statically first
-- infer only what can be justified from files
-- keep unknowns as `unknown`
-- show a proposal before any write
-- write only a small managed workflow surface after approval
-- keep audit mode report-only
-- preserve strong existing repo-local script layout when one already exists
+| Item | What it provides | Why it exists |
+| --- | --- | --- |
+| `SKILL.md` | The Codex-facing workflow contract | Tells an agent how to inspect, propose, and safely write workflow files |
+| `references/profile-schema.md` | The repo profiling rules | Keeps inspection structured and prevents vague guesses |
+| `references/proposal-format.md` | The output/proposal rules | Forces proposal-before-write and keeps changes easy to review |
+| `templates/agents/workflow-block.md` | Managed `AGENTS.md` block template | Gives each target repo a bounded workflow section instead of ad hoc instructions |
+| `templates/scripts/*.sh` | Canonical command templates | Standardizes build/test/verify/bootstrap entrypoints |
+| `templates/hooks/pre-commit` | Optional inactive hook template | Lets you add lightweight local guardrails without auto-installing hooks |
+| Validation examples | Real proposals/audits from tested repos | Shows how the workflow behaves on actual Apple app repos |
 
-## Who This Is For
+## When to use it
 
-This is for people working on repos that are:
+Use this workflow when a repo is:
 
 - Xcode-first
-- iOS, macOS, or mixed Apple app repos
-- slightly messy or inconsistent about build/test/verify entrypoints
+- an iOS app, macOS app, or similar Apple app repo
+- unclear about the right build/test/verify commands
 - used by both humans and coding agents
+- accumulating drift between docs, scripts, and actual project truth
 
-It is especially useful when a repo has workflow drift between:
+Do not use it as-is when a repo is:
 
-- Xcode project truth
-- supporting `Package.swift`
-- old shell scripts
-- CI routines
-- AGENTS guidance
+- not Apple-platform focused
+- already governed by a stronger workflow system you do not want to disturb
+- too ambiguous to identify a primary workflow surface safely
 
-## What You Run
+## Quick start
 
-This project is currently delivered as a Codex skill.
-
-You use it by pointing Codex at a target Apple app repository and asking it to run this workflow in one of three modes:
-
-- `bootstrap`
-- `refresh`
-- `audit`
-
-Practical examples:
-
-```text
-Use ios-macos-repo-workflow in bootstrap mode for /path/to/repo
-```
-
-```text
-Use ios-macos-repo-workflow in refresh mode for /path/to/repo
-```
+If you want to use this workflow on a target repo with Codex:
 
 ```text
 Use ios-macos-repo-workflow in audit mode for /path/to/repo
 ```
 
-## What Happens When You Run It
+Then move to:
 
-### 1. Static inspection first
+```text
+Use ios-macos-repo-workflow in bootstrap mode for /path/to/repo
+```
 
-The workflow inspects repo files first and does not start by running build or test commands.
+or:
 
-Examples of static signals it may inspect:
+```text
+Use ios-macos-repo-workflow in refresh mode for /path/to/repo
+```
 
-- `*.xcodeproj`
-- `*.xcworkspace`
-- `project.yml`
-- `Package.swift`
-- `AGENTS.md`
-- `script/` or `scripts/`
-- existing CI workflow files
+Recommended order:
 
-### 2. Partial repo profile
+1. Run `audit` first when the repo is active, unfamiliar, dirty, or has workflow ambiguity.
+2. Use `bootstrap` for a clean repo that does not already have a managed workflow contract.
+3. Use `refresh` after the repo already has managed workflow files and needs a careful update.
 
-The repo is summarized using the schema in [`references/profile-schema.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/profile-schema.md).
+## How to use in a new iOS/macOS project
 
-Important rule:
+For a new project, the best use is an early `bootstrap`.
 
-- unknowns stay `unknown`
-- the workflow should not guess just to sound complete
+Typical flow:
 
-### 3. Proposal before write
+1. Create the Xcode project first.
+2. Add your initial `AGENTS.md` in the target repo if you already use repo-local agent rules.
+3. Ask Codex to run the workflow in `bootstrap` mode.
+4. Review the proposal before any write.
+5. Approve the write only after the proposed build/test/verify surface matches the repo.
 
-Before any file changes, the workflow produces a short proposal using [`references/proposal-format.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/proposal-format.md).
+What you should expect in the target repo after the write:
 
-That proposal should describe:
+- a managed workflow block in the target repo's `AGENTS.md`
+- a canonical script surface in the target repo's `script/` or `scripts/`
+- optional templates only when justified
 
-- inferred mode
-- repo summary
-- core changes
-- optional generated extensions
-- recommendations only
-- blocking questions if needed
+Why this helps early:
 
-### 4. Approval gate
+- agents stop guessing which command to run
+- project setup becomes repeatable
+- later CI can wrap the same local commands instead of inventing different ones
 
-No files should be written until the proposal is approved.
+## How to use in an existing project
 
-### 5. Managed workflow write
+For an existing repo, start with `audit`.
 
-After approval, the workflow can create or patch a small repo-local workflow surface from [`templates/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates).
+Use `audit` when:
 
-## Modes
+- the repo already has scripts or workflow docs
+- the checkout is dirty
+- there are worktrees or multiple workflow surfaces
+- you are not sure what the real build/test truth is
 
-### `bootstrap`
+Use `refresh` only after:
 
-Use this when the target repo does not yet have a managed workflow contract.
+- the primary repo surface is clear
+- the managed ownership boundary is clear
+- you agree with the proposal
 
-What it should do:
+Why this matters:
 
-- inspect the repo
-- infer a narrow initial workflow profile
-- propose a first managed workflow contract
+- existing repos usually have muscle memory and human-authored workflow truth
+- this workflow is designed to preserve strong existing signals, not bulldoze them
 
-Expected output:
+## What each script does
 
-- repo summary
-- proposed managed files
-- optional extensions if justified
-- recommendations for anything outside v1 scope
+These scripts are templates. They are rendered into a target repo and become that repo's local workflow contract.
 
-### `refresh`
+| Script | What it does | Why it exists | When to run or modify it |
+| --- | --- | --- | --- |
+| `templates/scripts/common.sh` | Shared shell helper functions | Prevents duplicated repo-root, logging, and command-check logic | Modify only when the shared shell contract itself needs to change |
+| `templates/scripts/build.sh` | Canonical build entrypoint | Gives the repo one obvious app-first build command | Run for routine local builds; modify when the real build surface changes |
+| `templates/scripts/test.sh` | Canonical routine test entrypoint | Makes the test surface explicit, even when the repo has no tests yet | Run when routine tests exist; keep honest if the repo has `test_stack: none` |
+| `templates/scripts/verify-fast.sh` | Cheap routine verification | Gives one low-cost confidence check for humans and agents | Run before small changes, commits, or quick reviews |
+| `templates/scripts/verify-deep.sh` | Broader verification entrypoint | Separates cheap checks from slower or wider checks | Run before merges or larger changes |
+| `templates/scripts/bootstrap-dev.sh` | Local workflow discovery helper | Reminds contributors what the canonical commands are | Run when onboarding or checking the managed workflow shape |
+| `templates/scripts/test-ui.sh` | Optional UI test entrypoint | Keeps UI validation explicit and separate from routine checks | Add only when the repo has a real UI test surface |
+| `templates/scripts/generate-project.sh` | Optional project-generation entrypoint | Supports XcodeGen/Tuist-style generated project repos | Add only when project generation is part of normal workflow truth |
 
-Use this when the repo already has workflow artifacts and you want the contract updated carefully.
+## What each hook/config/template does
 
-What it should do:
+| Item | What it does | Why it exists | When to use or modify it |
+| --- | --- | --- | --- |
+| `templates/agents/workflow-block.md` | Managed `AGENTS.md` workflow block template for the target repo | Keeps workflow guidance bounded and patchable | Use whenever the target repo has `AGENTS.md`; modify only if the managed contract itself changes |
+| `templates/hooks/pre-commit` | Inactive pre-commit hook wrapper | Lets a repo opt into local verification without hidden installation | Use only when explicitly requested; render path placeholders first, install manually, then `chmod +x` |
+| `references/profile-schema.md` | Inspection schema | Forces consistent repo profiling | Modify when the workflow contract needs a new stable field or rule |
+| `references/proposal-format.md` | Proposal schema | Keeps outputs predictable and reviewable | Modify when proposal expectations change across all repos |
+| `SKILL.md` | Agent execution contract | Defines workflow behavior for Codex | Modify when the workflow rules themselves need to change |
 
-- inspect existing workflow files and repo signals
-- detect managed versus unmanaged workflow truth
-- propose narrow updates instead of broad rewrites
+## Recommended Codex workflow
 
-Expected output:
+Use this repo as a decision layer before code generation, not after.
 
-- repo summary
-- patch/create/preserve/skip decisions
-- drift notes
-- recommendations for follow-up
+Recommended operating sequence:
 
-### `audit`
+1. `audit` the target repo.
+2. confirm the primary workflow surface
+3. review the proposal
+4. approve the managed workflow write
+5. use the repo-local canonical commands for ongoing development
 
-Use this when you want a report without defaulting to writes.
-
-What it should do:
-
-- inspect the repo
-- summarize workflow state
-- report findings, drift, or ambiguity
-
-Expected output:
-
-- concise repo summary
-- managed artifact status
-- findings only when needed
-- optional recommendations
-
-## What It Writes
-
-Core managed artifacts:
-
-- bounded workflow block in repo `AGENTS.md`
-- `build.sh`
-- `test.sh`
-- `verify-fast.sh`
-- `verify-deep.sh`
-- `bootstrap-dev.sh`
-- `common.sh`
-
-Optional generated artifacts:
-
-- `test-ui.sh`
-- `generate-project.sh`
-- `hooks/pre-commit` template on explicit request only
-
-These come from [`templates/agents/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/agents), [`templates/scripts/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts), and [`templates/hooks/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/hooks).
-
-## Why The Scripts Are In This Repo
-
-The shell scripts in this repo are templates, not this repo's own runtime.
-
-They exist because the product here is not only a skill file. The product is the whole workflow contract:
-
-- the skill behavior
-- the profile rules
-- the proposal shape
-- the managed templates
-
-When this workflow is used on a target repo, those templates become that repo's canonical local workflow surface.
-
-The hook template is different:
-
-- it is intentionally inactive
-- it is only a wrapper around the canonical verification entrypoint
-- activating it remains a manual repo decision
-- installing it requires `chmod +x` on the copied hook file
-- its verification path should be rendered from the repo's actual canonical script layout
-
-## Current V1 Constraints
-
-This project is intentionally narrow.
-
-It does not try to:
-
-- install tools
-- rewrite CI
-- boot simulators
-- normalize every repo into one policy
-- invent dynamic fixes during static inspection
-- become a general Apple engineering framework
-
-Unknown is allowed.
-
-Proposal-before-write is required.
-
-Static inspection is the first pass.
-
-Worktree-first repos are audit-first in v1.
-
-If repo rules say the real implementation surface is a different worktree than the provided checkout, the workflow should stop and ask before writing.
-
-Dirty active checkouts are also audit-first when the local modifications are already known and the write scope is not explicit.
-
-## Mixed Xcode/SPM Repos
-
-One important v1 lesson from validation:
-
-Mixed Xcode/SPM repos are real, and they are not cleanly represented by pretending there is only one module surface.
-
-The current contract is:
-
-- preserve app-first intent when an authoritative Xcode surface exists
-- treat `Package.swift` as supporting workflow truth when justified
-- do not assume app target names, package products, and test import names all match
-- report module-surface drift as risk or recommendation material instead of hiding it inside automation
-
-## Repository Contents
-
-- [`README.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/README.md): public overview and usage
-- [`SKILL.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/SKILL.md): agent-facing contract
-- [`references/profile-schema.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/profile-schema.md): structured repo profile rules
-- [`references/proposal-format.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/proposal-format.md): proposal output contract
-- [`templates/`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates): managed artifact templates
-- [`mdzen-v1-proposal.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md): example `refresh` proposal from first validation
-- [`mdzen-v1-audit.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-audit.md): example `audit` output from first validation
-- [`dsv-v1-audit.md`](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/dsv-v1-audit.md): example `audit` output for a worktree-first repo
-
-## Validation
-
-First validation repo:
-
-- `/Users/guhan/Guhan/Projects/MDZen`
-
-Second validation repo:
-
-- `/Users/guhan/Guhan/Projects/DSV`
-
-What MDZen proved:
-
-- the reduced-v1 shape is useful
-- proposal-before-write is the right guardrail
-- mixed Xcode/SPM repos need conservative handling
-- a small command surface is more important than broad automation
-- the repo should carry concrete mode examples, not only abstract mode descriptions
-
-What DSV proved:
-
-- the workflow cannot assume the provided repo root is always the active implementation surface
-- worktree-first repos need an audit-first stop condition before writes
-- hook support is only safe in v1 as an inactive template, not an auto-installed behavior
-
-What WhisperV proves:
-
-- an active root checkout can still be a poor write target when it already has unrelated in-flight changes
-- repos with an existing `scripts/` layout should preserve that layout instead of being normalized to `script/`
-- clean bootstrap candidates can still lack any real automated test surface, and the workflow should say that plainly instead of faking one
-
-## Next Phases
-
-Near-term:
-
-1. Add lightweight fixture-based validation for template rendering.
-2. Decide whether a tiny machine-readable manifest belongs in v1.1.
-3. Validate one clean bootstrap repo where the provided root is also the active implementation surface.
-4. Decide whether inactive hook templates should stay in v1 or move to v1.1.
-
-Later:
-
-1. Add a thin CLI wrapper over the same contract.
-2. Add fixture repos or sample targets for regression testing.
-3. Improve generated-project handling for XcodeGen/Tuist repos.
-4. Split public docs out of the README if the repo surface grows.
-
-## Current Status
-
-This is still reduced v1 work.
-
-The goal right now is not maximum automation.
-
-The goal is a small, explicit, trustworthy workflow contract for Apple app repos.
+Practical guidance:
+
+| Situation | Recommended mode | Reason |
+| --- | --- | --- |
+| Clean new Xcode app repo | `bootstrap` | Best time to establish a small command surface |
+| Existing repo with scripts/docs already present | `audit` then `refresh` | Avoids breaking existing workflow truth |
+| Repo with worktree ambiguity | `audit` only | Write target is unsafe until clarified |
+| Dirty active checkout | `audit` only | Avoids mixing workflow work with unrelated local edits |
+| No test target yet | `bootstrap` or `refresh` with explicit no-test handling | The workflow should stay honest instead of pretending tests exist |
+
+## Why this improves coding efficiency
+
+This repo improves efficiency in four ways:
+
+| Improvement | Why it matters |
+| --- | --- |
+| Fewer repeated prompts | Agents do not need the build/test/verify surface re-explained every session |
+| Less workflow guessing | One canonical command surface beats ad hoc shell history |
+| Better reviewability | Proposal-before-write makes workflow changes easier to inspect and approve |
+| Better scaling across repos | The same contract can be applied repeatedly without turning into a full framework |
+
+For Codex-assisted development, the biggest practical win is token reduction through stable repo-local conventions.
+
+## Repo layout
+
+| Path | Purpose |
+| --- | --- |
+| [README.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/README.md) | User guide |
+| [SKILL.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/SKILL.md) | Agent-facing workflow contract |
+| [references/profile-schema.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/profile-schema.md) | Inspection/profile rules |
+| [references/proposal-format.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/references/proposal-format.md) | Proposal output rules |
+| [templates/agents/workflow-block.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/agents/workflow-block.md) | Managed `AGENTS.md` block template |
+| [templates/scripts/common.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/common.sh) | Shared shell helper |
+| [templates/scripts/build.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/build.sh) | Build template |
+| [templates/scripts/test.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/test.sh) | Test template |
+| [templates/scripts/verify-fast.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/verify-fast.sh) | Fast verify template |
+| [templates/scripts/verify-deep.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/verify-deep.sh) | Deep verify template |
+| [templates/scripts/bootstrap-dev.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/bootstrap-dev.sh) | Bootstrap helper template |
+| [templates/scripts/test-ui.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/test-ui.sh) | Optional UI test template |
+| [templates/scripts/generate-project.sh](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/scripts/generate-project.sh) | Optional generated-project template |
+| [templates/hooks/pre-commit](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/templates/hooks/pre-commit) | Optional inactive hook template |
+| [mdzen-v1-proposal.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-proposal.md) | MDZen refresh example |
+| [mdzen-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/mdzen-v1-audit.md) | MDZen audit example |
+| [dsv-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/dsv-v1-audit.md) | DSV audit example |
+| [whisperv-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/whisperv-v1-audit.md) | WhisperV audit example |
+| [whisperv-v1-proposal.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/whisperv-v1-proposal.md) | WhisperV bootstrap example |
+
+## Maintenance and customization
+
+Modify this repo carefully and at the right level.
+
+| If you want to change... | Change here | Why |
+| --- | --- | --- |
+| How agents inspect/profile repos | `SKILL.md` and `references/profile-schema.md` | That is contract behavior, not template behavior |
+| How proposals are written | `references/proposal-format.md` | Keeps proposal output consistent |
+| The managed `AGENTS.md` section | `templates/agents/workflow-block.md` | Avoids repo-by-repo drift |
+| Shared shell behavior | `templates/scripts/common.sh` | One helper affects many rendered scripts |
+| One specific command surface | Relevant script template in `templates/scripts/` | Keeps behavior localized |
+| Optional hook behavior | `templates/hooks/pre-commit` | Hooks should remain explicit and minimal |
+
+Guidelines:
+
+1. Keep the workflow small.
+2. Preserve existing repo truth when it is stronger than the template.
+3. Prefer `audit` when the write target is ambiguous.
+4. Do not add automation that hides repo-specific risk.
+5. Keep examples current as validation evolves.
