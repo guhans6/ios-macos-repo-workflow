@@ -66,6 +66,12 @@ Mixed Xcode/SPM repos should also be handled conservatively:
 - do not assume app target names, package products, and test import module names all match
 - when module-surface drift is visible or likely, carry it as a risk or recommendation rather than inventing a global fixup rule
 
+Repos with no established automated test surface should also be handled conservatively:
+
+- allow `test_stack: none` when static inspection shows no meaningful repo test target or routine test command
+- avoid inventing fake test automation just to fill the command surface
+- in those repos, `test.sh` may remain an explicit no-test-yet placeholder and `verify-fast` may be build-first
+
 ## Rendered Artifacts
 
 Core rendered artifacts:

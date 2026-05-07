@@ -31,6 +31,12 @@ For each item:
 - action: `create`, `patch`, `preserve`, `skip`
 - one-line rationale
 
+If the repo has no established automated test surface:
+
+- say that explicitly in the proposal
+- do not present `test.sh` as if it already has real coverage
+- allow `verify-fast` to be build-first rather than claiming routine tests exist
+
 ## 3. Optional Generated Extensions
 
 Only include strong-fit extensions:

@@ -278,6 +278,7 @@ What WhisperV proves:
 
 - an active root checkout can still be a poor write target when it already has unrelated in-flight changes
 - repos with an existing `scripts/` layout should preserve that layout instead of being normalized to `script/`
+- clean bootstrap candidates can still lack any real automated test surface, and the workflow should say that plainly instead of faking one
 
 ## Next Phases
 
