@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ios-macos-repo-workflow` is a reusable workflow/template for Xcode-first iOS and macOS repositories that you want to develop with Codex or other coding agents.
+`ios-macos-repo-workflow` is a reusable workflow/template for Xcode-first iOS/macOS repositories and SwiftPM-only Apple codebases that you want to develop with Codex or other coding agents.
 
 Its job is simple:
 
@@ -31,6 +31,7 @@ This repo is intentionally narrow. It is not a build system, CI framework, or re
 Use this workflow when a repo is:
 
 - Xcode-first
+- SwiftPM-only and Apple-platform focused
 - an iOS app, macOS app, or similar Apple app repo
 - unclear about the right build/test/verify commands
 - used by both humans and coding agents
@@ -92,6 +93,27 @@ Why this helps early:
 - project setup becomes repeatable
 - later CI can wrap the same local commands instead of inventing different ones
 
+## How to use in a SwiftPM-only codebase
+
+For a package-first repo, use the workflow when `Package.swift` is the real source of build/test truth and there is no authoritative Xcode project, workspace, Tuist manifest, or XcodeGen manifest.
+
+Typical flow:
+
+1. Keep `Package.swift` as the primary workflow surface.
+2. Ask Codex to run the workflow in `audit` or `bootstrap` mode.
+3. Review whether the package should be treated as whole-package, product-specific, or target-specific.
+4. Approve the write only after the proposed scripts match the package's real command surface.
+
+What you should expect in the target repo after the write:
+
+- a managed workflow block in the target repo's `AGENTS.md`
+- a canonical script surface in the target repo's `script/` or `scripts/`
+- `build.sh` wrapping `swift build`
+- `test.sh` wrapping `swift test` when real package tests exist
+- `verify-fast.sh` using package build plus routine tests when available
+
+SwiftPM-only support does not imply generated Xcode project support, UI test support, or CI migration. Those stay explicit repo decisions.
+
 ## How to use in an existing project
 
 For an existing repo, start with `audit`.
@@ -121,7 +143,7 @@ These scripts are templates. They are rendered into a target repo and become tha
 | Script | What it does | Why it exists | When to run or modify it |
 | --- | --- | --- | --- |
 | `templates/scripts/common.sh` | Shared shell helper functions | Prevents duplicated repo-root, logging, and command-check logic | Modify only when the shared shell contract itself needs to change |
-| `templates/scripts/build.sh` | Canonical build entrypoint | Gives the repo one obvious app-first build command | Run for routine local builds; modify when the real build surface changes |
+| `templates/scripts/build.sh` | Canonical build entrypoint | Gives the repo one obvious build command | Run for routine local builds; modify when the real build surface changes |
 | `templates/scripts/test.sh` | Canonical routine test entrypoint | Makes the test surface explicit, even when the repo has no tests yet | Run when routine tests exist; keep honest if the repo has `test_stack: none` |
 | `templates/scripts/verify-fast.sh` | Cheap routine verification | Gives one low-cost confidence check for humans and agents | Run before small changes, commits, or quick reviews |
 | `templates/scripts/verify-deep.sh` | Broader verification entrypoint | Separates cheap checks from slower or wider checks | Run before merges or larger changes |
@@ -153,6 +175,18 @@ It preserves XcodeGen when a repo already uses `project.yml` or `project.yaml`.
 
 This repo does not install Tuist, install XcodeGen, or migrate `.xcodeproj` files automatically.
 Migration should stay proposal-first because it changes project ownership, onboarding steps, and rollback behavior.
+
+## SwiftPM-only packages
+
+SwiftPM-only repos are package-first when `Package.swift` is authoritative and no stronger Xcode surface exists.
+
+| Situation | What to do | Why |
+| --- | --- | --- |
+| Single package product or clear package docs | Use `primary_workflow_unit` for that product or `whole_package` | Avoids forcing Xcode scheme vocabulary onto packages |
+| Package has real test targets | Render `test.sh` around `swift test` | Keeps routine package tests discoverable |
+| Package has no tests yet | Keep `test.sh` honest as a no-test placeholder | Avoids false confidence |
+| Multiple products with no primary signal | Mark `ambiguous_package_product` | Prevents the workflow from choosing a product by guess |
+| Platform or driver requirements are unclear | Mark `swiftpm_driver_unclear` and recommend a probe | Avoids writing commands that cannot run on the host |
 
 ## Graphify Context
 
@@ -209,6 +243,7 @@ Practical guidance:
 | Situation | Recommended mode | Reason |
 | --- | --- | --- |
 | Clean new Xcode app repo | `bootstrap` | Best time to establish a small command surface |
+| Clean SwiftPM-only Apple package | `bootstrap` | Best time to establish `swift build` / `swift test` entrypoints |
 | Existing repo with scripts/docs already present | `audit` then `refresh` | Avoids breaking existing workflow truth |
 | Repo with worktree ambiguity | `audit` only | Write target is unsafe until clarified |
 | Dirty active checkout | `audit` only | Avoids mixing workflow work with unrelated local edits |
@@ -251,6 +286,7 @@ For Codex-assisted development, the biggest practical win is token reduction thr
 | [dsv-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/dsv-v1-audit.md) | DSV audit example |
 | [whisperv-v1-audit.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/whisperv-v1-audit.md) | WhisperV audit example |
 | [whisperv-v1-proposal.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/whisperv-v1-proposal.md) | WhisperV bootstrap example |
+| [swiftpm-v1-proposal.md](/Users/guhan/Guhan/Projects/Tools/codex/ios-macos-repo-workflow/swiftpm-v1-proposal.md) | SwiftPM-only bootstrap example |
 
 ## Maintenance and customization
 
@@ -265,6 +301,7 @@ Modify this repo carefully and at the right level.
 | One specific command surface | Relevant script template in `templates/scripts/` | Keeps behavior localized |
 | Optional hook behavior | `templates/hooks/pre-commit` | Hooks should remain explicit and minimal |
 | Generated-project policy | `SKILL.md`, `references/profile-schema.md`, and `templates/scripts/generate-project.sh` | Tuist/XcodeGen decisions affect repo ownership and onboarding |
+| SwiftPM-only policy | `SKILL.md`, `references/profile-schema.md`, and `references/proposal-format.md` | Package-first repos should not inherit Xcode scheme assumptions |
 | Graphify context behavior | `SKILL.md`, `references/proposal-format.md`, and `templates/scripts/graphify-refresh.sh` | Context graphs should help agents without becoming required verification |
 
 Guidelines:

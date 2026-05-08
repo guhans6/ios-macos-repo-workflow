@@ -1,13 +1,13 @@
 ---
 name: ios-macos-repo-workflow
-description: Creates and maintains a small repo-local workflow contract for Xcode-first Apple app repositories. Use when bootstrapping, refreshing, or auditing build/test/verify commands, AGENTS.md workflow guidance, or lightweight repo workflow scripts for iOS/macOS projects.
+description: Creates and maintains a small repo-local workflow contract for Xcode-first Apple app repositories and SwiftPM-only Apple codebases. Use when bootstrapping, refreshing, or auditing build/test/verify commands, AGENTS.md workflow guidance, or lightweight repo workflow scripts for iOS/macOS projects and Swift packages.
 ---
 
 # iOS macOS Repo Workflow
 
 ## Purpose
 
-This skill is a workflow contract generator and auditor for Apple app repos.
+This skill is a workflow contract generator and auditor for Apple app repos and SwiftPM-only Apple codebases.
 It is not a build-system framework, CI manager, or deep Apple engineering guide.
 
 ## Modes
@@ -50,7 +50,7 @@ When a repo already has a strong script layout signal such as `script/` or `scri
 
 ## V1 Scope
 
-V1 targets Xcode-first Apple app repos.
+V1 targets Xcode-first Apple app repos and SwiftPM-only Apple codebases.
 Support only a narrow set of optional extensions:
 
 - `ui_tests`
@@ -75,6 +75,16 @@ Mixed Xcode/SPM repos should also be handled conservatively:
 - do not assume app target names, package products, and test import module names all match
 - when module-surface drift is visible or likely, carry it as a risk or recommendation rather than inventing a global fixup rule
 
+SwiftPM-only repos should be handled as package-first:
+
+- treat `Package.swift` as the primary workflow surface when no authoritative `.xcodeproj`, `.xcworkspace`, Tuist, or XcodeGen surface exists
+- prefer `project_system: swiftpm` and `project_family: swiftpm_apple` when static evidence supports package-first Apple-platform work
+- use `primary_workflow_unit` for package products, targets, or the whole package instead of forcing Xcode scheme vocabulary
+- default to `swift build` and `swift test` for host-buildable packages with real test targets
+- use an explicit no-test placeholder when the package has no meaningful automated test surface
+- do not render generated-project helpers or UI-test helpers unless the repo has clear tooling for them
+- if package platform evidence suggests an Xcode destination or non-host driver is required, carry that as `swiftpm_driver_unclear` and ask before writing commands
+
 Repos with no established automated test surface should also be handled conservatively:
 
 - allow `test_stack: none` when static inspection shows no meaningful repo test target or routine test command
@@ -88,6 +98,13 @@ Core rendered artifacts:
 - bounded managed workflow block in repo `AGENTS.md`
 - small script surface for `build`, `test`, `verify-fast`, `verify-deep`, `bootstrap-dev`
 - shared shell helper for logs and command checks
+
+SwiftPM-only rendered defaults:
+
+- `build.sh` wraps `swift build`
+- `test.sh` wraps `swift test` when real package tests exist
+- `verify-fast.sh` runs build plus routine tests when tests exist, otherwise build-only
+- `verify-deep.sh` starts with package build/tests and adds slower package-specific checks only when statically justified
 
 Optional rendered artifacts:
 
