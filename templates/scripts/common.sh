@@ -59,9 +59,10 @@ run_logged() {
     echo "OK: $label"
     echo "Log: $log_file"
     return 0
+  else
+    local status=$?
   fi
 
-  local status=$?
   echo "FAILED: $label" >&2
   echo "Log: $log_file" >&2
   tail -n 40 "$log_file" >&2 || true
